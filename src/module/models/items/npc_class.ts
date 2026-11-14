@@ -35,14 +35,17 @@ export class NpcClassModel extends LancerDataModel<NpcClassModelSchema, Item.Imp
   }
 
   static migrateData(data: any) {
-    data.flavor ??= data.info?.flavor;
-    data.tactics ??= data.info?.tactics;
+    // Foundry v14 also runs migrateData on partial update diffs, so only touch keys that are present
+    if (data.info?.flavor !== undefined) data.flavor ??= data.info.flavor;
+    if (data.info?.tactics !== undefined) data.tactics ??= data.info.tactics;
 
     // Convert old regrefs
-    data.base_features = data.base_features?.map((bf: string | object) => regRefToLid(bf)).filter((x: any) => x);
-    data.optional_features = data.optional_features
-      ?.map((of: string | object) => regRefToLid(of))
-      .filter((x: any) => x);
+    if (Array.isArray(data.base_features))
+      data.base_features = data.base_features.map((bf: string | object) => regRefToLid(bf)).filter((x: any) => x);
+    if (Array.isArray(data.optional_features))
+      data.optional_features = data.optional_features
+        .map((of: string | object) => regRefToLid(of))
+        .filter((x: any) => x);
 
     // Invert stats
     if (typeof data.base_stats == "object" && !Array.isArray(data.base_stats)) {

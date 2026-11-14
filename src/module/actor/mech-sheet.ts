@@ -177,10 +177,10 @@ export class LancerMechSheet extends LancerActorSheet<EntryType.MECH> {
     // Handle generic mount type
     for (let selection of Object.values(MountType)) {
       mount_options.push({
-        name: selection,
+        label: selection,
         icon: "",
-        callback: async (html: JQuery) => {
-          let mountPath = html[0].dataset.path ?? "";
+        onClick: async (_event: Event, target: HTMLElement) => {
+          let mountPath = target.dataset.path ?? "";
 
           // Get the current mount
           let mount = resolveDotpath(this.actor, mountPath) as Actor.OfType<"mech">["loadout"]["weapon_mounts"][0];
@@ -220,11 +220,11 @@ export class LancerMechSheet extends LancerActorSheet<EntryType.MECH> {
 
     // Add a bracing option
     mount_options.push({
-      name: "Superheavy Bracing",
+      label: "Superheavy Bracing",
       icon: "",
-      callback: async (html: JQuery) => {
+      onClick: async (_event: Event, target: HTMLElement) => {
         let cd = await this.getData();
-        let mountPath = html[0].dataset.path ?? "";
+        let mountPath = target.dataset.path ?? "";
 
         // Get the current mount
         let mount = resolveDotpath(cd, mountPath) as Actor.OfType<"mech">["loadout"]["weapon_mounts"][0];
@@ -241,7 +241,10 @@ export class LancerMechSheet extends LancerActorSheet<EntryType.MECH> {
       },
     });
 
-    new foundry.applications.ux.ContextMenu.implementation(html, ".mount-type-ctx-root", mount_options);
+    const root: HTMLElement = html instanceof HTMLElement ? html : html[0];
+    new foundry.applications.ux.ContextMenu.implementation(root, ".mount-type-ctx-root", mount_options, {
+      jQuery: false,
+    });
   }
 
   // Save ourselves repeat work by handling most events clicks actual operations here

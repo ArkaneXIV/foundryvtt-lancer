@@ -31,11 +31,13 @@ export class NpcTemplateModel extends LancerDataModel<
   }
 
   static migrateData(data: any) {
-    // Convert old regrefs
-    data.base_features = data.base_features?.map((bf: string | object) => regRefToLid(bf)).filter((x: any) => x);
-    data.optional_features = data.optional_features
-      ?.map((of: string | object) => regRefToLid(of))
-      .filter((x: any) => x);
+    // Convert old regrefs. Foundry v14 also runs migrateData on partial update diffs, so only touch keys that are present
+    if (Array.isArray(data.base_features))
+      data.base_features = data.base_features.map((bf: string | object) => regRefToLid(bf)).filter((x: any) => x);
+    if (Array.isArray(data.optional_features))
+      data.optional_features = data.optional_features
+        .map((of: string | object) => regRefToLid(of))
+        .filter((x: any) => x);
 
     return super.migrateData(data);
   }

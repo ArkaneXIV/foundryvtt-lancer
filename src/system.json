@@ -16,7 +16,12 @@
     { "name": "SohumB" }
   ],
   "esmodules": ["lancer.mjs"],
-  "styles": ["styles/lancer.css", "fonts/compcon/glyphs.css", "fonts/mdi.css", "fonts/orbitron/orbitron.css"],
+  "styles": [
+    { "src": "styles/lancer.css" },
+    { "src": "fonts/compcon/glyphs.css" },
+    { "src": "fonts/mdi.css" },
+    { "src": "fonts/orbitron/orbitron.css" }
+  ],
   "documentTypes": {
     "Actor": {
       "npc": { "htmlFields": ["notes"] },

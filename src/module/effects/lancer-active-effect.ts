@@ -40,8 +40,8 @@ export class LancerActiveEffect<
    * Determine whether this Active Effect is suppressed or not.
    */
   get isSuppressed(): boolean {
-    // Check it's not just passing through
-    return !this.affectsUs();
+    // Respect core suppression (e.g. expired durations in v14), and check it's not just passing through
+    return super.isSuppressed || !this.affectsUs();
   }
 
   /**
@@ -294,21 +294,32 @@ export class LancerActiveEffect<
   }
 }
 
-// To support more effects, we add several effect types.
-export const AE_MODE_SET_JSON = 11 as CONST.ACTIVE_EFFECT_MODES;
-export const AE_MODE_APPEND_JSON = 12 as CONST.ACTIVE_EFFECT_MODES;
+// To support more effects, we add several effect change types.
+// Foundry v14 replaced numeric change modes with string change types; registered types get their own handler.
+export const AE_TYPE_SET_JSON = "lancerSetJson";
+export const AE_TYPE_APPEND_JSON = "lancerAppendJson";
+// Legacy numeric modes from pre-v14 data are migrated by core to "custom.<mode>"
+const LEGACY_AE_TYPE_SET_JSON = "custom.11";
+const LEGACY_AE_TYPE_APPEND_JSON = "custom.12";
 
 const _json_cache = {} as Record<string, any>;
-Hooks.on("applyActiveEffect", function (actor, change) {
-  if (change.mode == AE_MODE_SET_JSON || change.mode == AE_MODE_APPEND_JSON) {
+function parseJsonChangeValue(value: unknown): unknown {
+  // v14 core migration already parses JSON-string change values into objects
+  if (typeof value !== "string") return value;
+  const parsed = _json_cache[value] ?? JSON.parse(value);
+  _json_cache[value] = parsed;
+  return parsed;
+}
+
+function applyJsonChange(append: boolean) {
+  return (targetDoc: any, change: { key: string; value: unknown }) => {
     try {
-      let parsed_delta = _json_cache[change.value] ?? JSON.parse(change.value);
-      _json_cache[change.value] = parsed_delta;
+      const parsed_delta = parseJsonChangeValue(change.value);
       // Ok, now set it to wherever it was labeled
-      if (change.mode == AE_MODE_SET_JSON) {
-        foundry.utils.setProperty(actor, change.key, parsed_delta);
-      } else if (change.mode == AE_MODE_APPEND_JSON) {
-        const items = foundry.utils.getProperty(actor, change.key) as unknown[];
+      if (!append) {
+        foundry.utils.setProperty(targetDoc, change.key, parsed_delta);
+      } else {
+        const items = foundry.utils.getProperty(targetDoc, change.key) as unknown[];
         items.push(parsed_delta);
       }
     } catch (e) {
@@ -316,8 +327,19 @@ Hooks.on("applyActiveEffect", function (actor, change) {
       console.warn(e);
       console.warn(`JSON effect parse failed, ${change.value}`);
     }
-  }
-});
+  };
+}
+
+/** Register Lancer's custom ActiveEffect change types. Must run during init. */
+export function registerActiveEffectChangeTypes() {
+  const changeTypes = (CONFIG.ActiveEffect as any).changeTypes as Record<string, object>;
+  const setJson = { label: "LANCER: Set JSON", defaultPriority: 50, handler: applyJsonChange(false) };
+  const appendJson = { label: "LANCER: Append JSON", defaultPriority: 50, handler: applyJsonChange(true) };
+  changeTypes[AE_TYPE_SET_JSON] = setJson;
+  changeTypes[AE_TYPE_APPEND_JSON] = appendJson;
+  changeTypes[LEGACY_AE_TYPE_SET_JSON] = setJson;
+  changeTypes[LEGACY_AE_TYPE_APPEND_JSON] = appendJson;
+}
 
 declare module "fvtt-types/configuration" {
   interface DocumentClassConfig {

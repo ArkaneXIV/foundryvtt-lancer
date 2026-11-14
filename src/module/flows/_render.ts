@@ -42,7 +42,7 @@ export async function createChatMessageStep(
 ) {
   if (rolls && !Array.isArray(rolls)) rolls = [rolls];
   let chat_data = {
-    type: CONST.CHAT_MESSAGE_STYLES.IC,
+    style: CONST.CHAT_MESSAGE_STYLES.IC,
     rolls,
     speaker: {
       actor: actor,
@@ -54,20 +54,12 @@ export async function createChatMessageStep(
     flags: flags ? { lancer: flags } : undefined,
   };
 
-  const rollMode = game.settings.get("core", "rollMode");
-  switch (rollMode) {
-    case CONST.DICE_ROLL_MODES.BLIND:
-      chat_data.flavor = game.i18n.localize("CHAT.RollBlind");
-      break;
-    case CONST.DICE_ROLL_MODES.PRIVATE:
-      chat_data.flavor = game.i18n.localize("CHAT.RollPrivate");
-      break;
-    case CONST.DICE_ROLL_MODES.SELF:
-      chat_data.flavor = game.i18n.localize("CHAT.RollSelf");
-      break;
+  const messageMode = game.settings.get("core", "messageMode") as string;
+  if (["blind", "gm", "self"].includes(messageMode)) {
+    chat_data.flavor = game.i18n.localize(`CHAT.MODES.${messageMode}`);
   }
   // Respect the chat visibility setting
-  ChatMessage.applyRollMode(chat_data, rollMode);
+  (ChatMessage as any).applyMode(chat_data, messageMode);
 
   if (!rolls) delete chat_data.rolls;
   const cm = await ChatMessage.implementation.create(chat_data);

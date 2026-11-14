@@ -126,6 +126,15 @@ export function registerHandlebarsHelpers() {
     return ` name="${path}" value="${value}" `;
   });
 
+  // Block helper that marks the <option> matching `selected` as selected.
+  // Replaces the core {{#select}} helper, which was removed in Foundry v14.
+  Handlebars.registerHelper("select", function (this: any, selected: any, options: HelperOptions) {
+    const escapedValue = RegExp.escape(Handlebars.escapeExpression(String(selected ?? "")));
+    const rgx = new RegExp(` value=["']${escapedValue}["']`);
+    const html = options.fn(this);
+    return html.replace(rgx, "$& selected");
+  });
+
   // get an index from an array
   Handlebars.registerHelper("idx", function (array: any, index: any) {
     return array[index];

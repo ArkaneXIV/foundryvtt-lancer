@@ -49,7 +49,7 @@ tippy.setDefaultProps({ theme: "lancer-small", arrow: false, delay: [400, 200] }
 // import { importCC } from "./module/actor/import";
 import { LancerCombat, LancerCombatant } from "./module/combat/lancer-combat";
 import { LancerCombatTracker } from "./module/combat/lancer-combat-tracker";
-import { LancerActiveEffect } from "./module/effects/lancer-active-effect";
+import { LancerActiveEffect, registerActiveEffectChangeTypes } from "./module/effects/lancer-active-effect";
 import { EntryType } from "./module/enums";
 import { targetsFromTemplate } from "./module/flows/_template";
 import { registerHandlebarsHelpers } from "./module/helpers";
@@ -124,7 +124,10 @@ addEnrichers();
 Hooks.once("init", () => {
   console.log(`Initializing LANCER RPG System ${LANCER.ASCII}`);
 
-  CONFIG.ActiveEffect.legacyTransferral = false;
+  registerActiveEffectChangeTypes();
+  // Lancer areas are measured in grid spaces. Foundry v14 replaced the core.gridTemplates setting
+  // (which Lancer defaulted to true) with this template-mode configuration for Regions.
+  (CONFIG.Region as any).templateModeConfig.gridBased = true;
 
   // Add this schema for each document type.
   // game.documentTypes.Item.forEach(type => CONFIG.Item.dataModels[type] = MyItemModel);
@@ -355,16 +358,6 @@ Hooks.once("init", () => {
   Hooks.on("renderPrototypeTokenConfig", extendTokenConfig);
 });
 
-Hooks.once("setup", () => {
-  /////////////////////////////////
-  // DIRTY HACK DO NOT REPLICATE //
-  /////////////////////////////////
-  // Change the default value of the grid based templates option
-  // TODO Remove when we get https://github.com/foundryvtt/foundryvtt/issues/11477
-  const gridTemplates = game.settings.settings.get("core.gridTemplates");
-  if (gridTemplates) gridTemplates.default = true;
-});
-
 /* ------------------------------------ */
 /* When ready                           */
 /* ------------------------------------ */
@@ -460,9 +453,12 @@ Hooks.on("updateCombat", (_combat, changes) => {
     "turn" in changes &&
     game.user?.isGM
   ) {
-    canvas?.templates?.placeables.forEach(t => {
-      if (t.document.getFlag("lancer", "isAttack")) t.document.delete();
-    });
+    const attackTemplates = canvas?.scene?.regions.filter(r => !!r.getFlag("lancer", "isAttack")) ?? [];
+    if (attackTemplates.length)
+      canvas!.scene!.deleteEmbeddedDocuments(
+        "Region",
+        attackTemplates.map(r => r.id!)
+      );
   }
   // This can be removed in v10
   if (foundry.utils.hasProperty(changes, "turn")) {
@@ -518,7 +514,7 @@ Hooks.on("renderCombatTrackerConfig", extendCombatTrackerConfig);
 
 // Disable token vision and fog exploration by default in scene config
 Hooks.on("preCreateScene", scene => {
-  scene.updateSource({ tokenVision: false, "fog.exploration": false });
+  scene.updateSource({ tokenVision: false, "fog.mode": CONST.FOG_EXPLORATION_MODES.DISABLED });
 });
 
 Hooks.on("renderChatMessageHTML", async (cm, el, data) => {

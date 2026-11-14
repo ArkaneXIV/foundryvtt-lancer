@@ -8,7 +8,8 @@ export function dropStatusToCanvas(
   if (data.type !== "Item" || type !== "status") return;
   const rect = new PIXI.Rectangle(data.x, data.y, 0, 0);
   const tokens: Set<Token.Implementation> = canvas.tokens!.quadtree!.getObjects(rect, {
-    collisionTest: o => o.t.hitArea!.contains(data.x - o.t.x, data.y - o.t.y),
+    // Token placeables no longer carry canvas coordinates/hitArea in v14; test against their bounds
+    collisionTest: o => o.t.bounds.contains(data.x, data.y),
   }) as any;
   if (tokens.size !== 1 || !tokens.first()?.actor?.isOwner) return;
   LancerItem.fromDropData(data as any).then(i => tokens.first()?.actor?.createEmbeddedDocuments("Item", [i! as any]));

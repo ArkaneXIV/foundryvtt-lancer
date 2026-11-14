@@ -113,25 +113,30 @@ export class LancerCombatTracker extends foundry.applications.sidebar.tabs.Comba
     const getCombatant = (li: HTMLElement) => this.viewed?.combatants.get(li.dataset.combatantId!);
     const m: ContextMenu.Entry<HTMLElement>[] = [
       {
-        name: "LANCERINITIATIVE.AddActivation",
+        label: "LANCERINITIATIVE.AddActivation",
         icon: '<i class="fas fa-plus"></i>',
-        callback: (li: HTMLElement) => getCombatant(li)?.addActivations(1),
+        onClick: (_event: Event, li: HTMLElement) => getCombatant(li)?.addActivations(1),
       },
       {
-        name: "LANCERINITIATIVE.RemoveActivation",
+        label: "LANCERINITIATIVE.RemoveActivation",
         icon: '<i class="fas fa-minus"></i>',
-        callback: (li: HTMLElement) => getCombatant(li)?.addActivations(-1),
+        onClick: (_event: Event, li: HTMLElement) => getCombatant(li)?.addActivations(-1),
       },
       {
-        name: "LANCERINITIATIVE.UndoActivation",
+        label: "LANCERINITIATIVE.UndoActivation",
         icon: '<i class="fas fa-undo"></i>',
-        callback: (li: HTMLElement) =>
+        onClick: (_event: Event, li: HTMLElement) =>
           this.viewed
             ?.deactivateCombatant(li.dataset.combatantId!)
             .then(() => getCombatant(li)?.modifyCurrentActivations(1)),
       },
     ];
-    m.push(...super._getEntryContextOptions().filter((i: any) => i.name !== "COMBAT.CombatantReroll"));
+    // Lancer has no initiative rolls, so hide core's reroll entry
+    m.push(
+      ...super
+        ._getEntryContextOptions()
+        .filter((i: any) => i.label !== "COMBATANT.ACTIONS.Reroll" && i.name !== "COMBAT.CombatantReroll")
+    );
     return m;
   }
 }

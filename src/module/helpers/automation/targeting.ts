@@ -22,6 +22,5 @@ export async function checkForHit(tech: boolean, roll: Roll, target: LancerActor
 export function gridDist(token1: Token.Implementation, token2: Token.Implementation) {
   let c1 = token1.center;
   let c2 = token2.center;
-  let ray = new Ray(c1, c2);
-  return canvas?.grid?.grid?.measureDistances([{ ray }], { gridSpaces: true })[0];
+  return canvas?.grid?.measurePath([c1, c2]).distance;
 }

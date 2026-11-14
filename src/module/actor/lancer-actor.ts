@@ -260,10 +260,12 @@ export class LancerActor<SubType extends Actor.SubType = Actor.SubType> extends 
    * We require a customized active effect application workflow
    */
   prepareBaseData() {
+    // Core resets overrides, statuses, and ActiveEffect application phases here (Foundry v14+)
+    super.prepareBaseData();
     // Some modules create actors with type "base", or potentially others we don't care about
     if (!(ACTOR_TYPES as string[]).includes(this.type)) {
       console.log("Actor is not a LancerActor:", this);
-      return super.prepareBaseData();
+      return;
     }
     // TODO: Move these to the datamodels themselves
     // 1. First, finalize our system tasks. Items should be (minimally) prepared by now, so we can resolve embedded items

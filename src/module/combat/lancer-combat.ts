@@ -18,10 +18,78 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
     return super._preCreate(data, options, user);
   }
 
-  async _manageTurnEvents(...args: unknown[]) {
+  /**
+   * Lancer uses an activation model where `turn: null` means no one is acting.
+   * Core's v14 turn-event dispatch walks the turn indices between the previous
+   * and current turn, which misfires for activations (skipped turns get
+   * start/end events, activating index 0 fires nothing, deactivating never ends
+   * the turn). Instead, dispatch events only for the combatants that actually
+   * stopped or started acting.
+   */
+  async _manageTurnEvents() {
     // Avoid the Foundry bug where this is called on create, before this.previous is set.
-    if (!this.previous) return;
-    super._manageTurnEvents(...args);
+    if (!this.previous || !this.started) return;
+    const { current, previous } = this;
+    if (game.user?.isActiveGM) await this._lancerTriggerTurnEvents(current, previous);
+    Hooks.callAll("combatTurnChange", this, previous, current);
+  }
+
+  protected async _lancerTriggerTurnEvents(current: Combat.HistoryData, previous: Combat.HistoryData) {
+    const registry = (foundry.documents.ActiveEffect as any).registry;
+    const prior = previous.combatantId ? this.combatants.get(previous.combatantId) : undefined;
+    const next = current.combatantId ? this.combatants.get(current.combatantId) : undefined;
+    const roundDelta = (current.round ?? 0) - (previous.round ?? 0);
+
+    // Rewinding a round: let core-style duration tracking resynchronize
+    if (roundDelta < 0) {
+      await registry?.refresh("combatRewind", {
+        combat: this,
+        round: current.round,
+        turn: current.turn,
+        actors: new Set(this.combatants.map(c => c.actor)),
+      });
+      return;
+    }
+
+    const combatantChanged = prior !== next || current.turn !== previous.turn;
+    if (prior && (combatantChanged || roundDelta > 0)) {
+      const context = { round: previous.round, turn: previous.turn, skipped: false };
+      await this._onEndTurn(prior, context);
+      await registry?.refresh("turnEnd", { ...context, combat: this });
+      this._lancerTriggerRegionEvents(CONST.REGION_EVENTS.TOKEN_TURN_END, context, [prior]);
+    }
+    for (let i = 0; i < roundDelta; i++) {
+      const ended = { round: (previous.round ?? 0) + i, skipped: i > 0 };
+      if (ended.round > 0) {
+        await this._onEndRound(ended);
+        await registry?.refresh("roundEnd", { ...ended, combat: this });
+        this._lancerTriggerRegionEvents(CONST.REGION_EVENTS.TOKEN_ROUND_END, ended, this.combatants.contents);
+      }
+      const started = { round: ended.round + 1, skipped: ended.round + 1 !== current.round };
+      await this._onStartRound(started);
+      await registry?.refresh("roundStart", { ...started, combat: this });
+      this._lancerTriggerRegionEvents(CONST.REGION_EVENTS.TOKEN_ROUND_START, started, this.combatants.contents);
+    }
+    if (next && (combatantChanged || roundDelta > 0)) {
+      const context = { round: current.round, turn: current.turn, skipped: false };
+      await this._onStartTurn(next, context);
+      await this._clearMovementHistoryOnStartTurn(next, context);
+      await registry?.refresh("turnStart", { ...context, combat: this });
+      this._lancerTriggerRegionEvents(CONST.REGION_EVENTS.TOKEN_TURN_START, context, [next]);
+    }
+  }
+
+  /** Mirror of core's private Combat##triggerRegionEvents */
+  protected _lancerTriggerRegionEvents(eventName: string, eventData: object, combatants: Combatant.Implementation[]) {
+    const promises: Promise<unknown>[] = [];
+    for (const combatant of combatants) {
+      const token = combatant.token;
+      if (!token) continue;
+      for (const region of (token as any).regions ?? []) {
+        promises.push(region._triggerEvent(eventName, { token, combatant, combat: this, ...eventData }));
+      }
+    }
+    return Promise.allSettled(promises);
   }
 
   /**
@@ -44,6 +112,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
     Hooks.callAll("combatStart", this, updateData);
     await this.resetActivations();
     await this.update(updateData);
+    await (foundry.documents.ActiveEffect as any).registry?.refresh("combatStart", { combat: this });
     return this;
   }
 
@@ -52,7 +121,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
     const updateData = { round: this.round + 1, turn: null };
     let advanceTime = Math.max(this.turns.length - (this.turn || 0), 0) * CONFIG.time.turnTime;
     advanceTime += CONFIG.time.roundTime;
-    const updateOptions = { advanceTime, direction: 1 };
+    const updateOptions = { worldTime: { delta: advanceTime }, direction: 1 };
     Hooks.callAll("combatRound", this, updateData, updateOptions);
     await this.update(updateData, updateOptions as any);
     return this;
@@ -63,7 +132,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
    */
   override async nextTurn(): Promise<this> {
     const updateData = { turn: null };
-    const updateOptions = { advanceTime: 0, direction: 0 };
+    const updateOptions = { worldTime: { delta: 0 }, direction: 0 };
     Hooks.callAll("combatTurn", this, updateData, updateOptions);
     await this.update(updateData, updateOptions as any);
     return this;
@@ -75,7 +144,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
     let advanceTime = 0;
     if (round > 0) advanceTime -= CONFIG.time.roundTime;
     const updateData = { round, turn: null };
-    const updateOptions = { advanceTime, direction: -1 };
+    const updateOptions = { worldTime: { delta: advanceTime }, direction: -1 };
     Hooks.callAll("combatRound", this, updateData, updateOptions);
     await this.update(updateData, updateOptions as any);
     return this;
@@ -87,7 +156,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
   override async previousTurn() {
     if (this.turn === null) return this;
     const updateData = { turn: null };
-    const updateOptions = { advanceTime: -CONFIG.time.turnTime, direction: -1 };
+    const updateOptions = { worldTime: { delta: -CONFIG.time.turnTime }, direction: -1 };
     await this.combatant?.modifyCurrentActivations(1);
     Hooks.callAll("combatTurn", this, updateData, updateOptions);
     await this.update(updateData, updateOptions as any);
@@ -122,7 +191,7 @@ export class LancerCombat<SubType extends Combat.SubType = Combat.SubType> exten
     await combatant?.modifyCurrentActivations(-1);
     const turn = this.turns.findIndex(t => t.id === id);
     const updateData = { turn };
-    const updateOptions = { advanceTime: CONFIG.time.turnTime, direction: 1 as const };
+    const updateOptions = { worldTime: { delta: CONFIG.time.turnTime }, direction: 1 as const };
     Hooks.callAll("combatTurn", this, updateData, updateOptions);
     return this.update(updateData, updateOptions);
   }
