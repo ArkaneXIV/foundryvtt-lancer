@@ -128,8 +128,13 @@
     display: block;
     width: 30px;
     height: 30px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: none;
+    cursor: pointer;
     -webkit-appearance: none;
-    appearance: textfield;
+    appearance: none;
     outline: 0;
     background-repeat: no-repeat;
     background-position: center center;
@@ -137,6 +142,24 @@
     font: normal normal normal 24px/1 "Material Design Icons";
     -webkit-filter: none !important;
     filter: none !important;
+
+    // Foundry v13+ draws checkboxes with sized Font Awesome ::before/::after
+    // pseudo-elements; undo that so only the battery glyph shows.
+    &::before {
+      position: static;
+      display: block;
+      width: 30px;
+      height: 30px;
+      font: normal normal normal 24px/30px "Material Design Icons";
+      text-align: center;
+      border-radius: 0;
+      outline: none;
+      background: none;
+    }
+    &::after {
+      content: none;
+      display: none;
+    }
   }
 
   input.core-power-toggle:checked::before {
