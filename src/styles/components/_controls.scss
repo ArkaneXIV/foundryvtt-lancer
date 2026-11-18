@@ -36,6 +36,15 @@
     }
   }
 
+  // The pilot sheet has six tabs, which don't fit its default width at the
+  // window's 14px font (the first wraps, the last is cut off). Tighten them
+  // so they stay on one line.
+  .lancer.sheet.pilot .lancer-tabs .lancer-tab {
+    font-size: 0.85em;
+    padding: 0 7px;
+    white-space: nowrap;
+  }
+
   .hex {
     cursor: pointer;
     font-size: 1.6em;
