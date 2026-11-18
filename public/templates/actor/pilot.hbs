@@ -126,8 +126,8 @@
     <div class="tab pilot flexcol" data-group="primary" data-tab="narrative">
       <div class="card clipped">
         <div class="flexrow">
-          {{{clicker-stat-card "level" "mdi mdi-shield-outline" "system.level" false}}}
-          {{{stat-rollable-card "grit" "cci cci-armor" "system.grit"}}}
+          {{{clicker-stat-card "level" "mdi mdi-shield-outline" "system.level" false full=true}}}
+          {{{stat-rollable-card "grit" "cci cci-armor" "system.grit" full=true}}}
         </div>
       </div>
 
@@ -200,7 +200,7 @@
       <div class="flexrow">
         {{!-- Skill Triggers --}}
         <div class="card clipped">
-          <h2 class="lancer-header lancer-primary submajor clipped">
+          <h2 class="lancer-header lancer-primary major clipped">
             {{localize "lancer.pilot-sheet.abilities.skills"}}
           </h2>
           {{#each itemTypes.skill as |skill index|}}
@@ -243,7 +243,7 @@
       </div>
 
       <div class="card clipped">
-        <span class="lancer-header lancer-primary submajor">{{
+        <span class="lancer-header lancer-primary major">{{
             localize "lancer.common-sheet.headers.combatUtilities"
           }}</span>
         <div class="lancer-flow-button-grid">
@@ -306,10 +306,10 @@
       </div>
 
       <div class="flexrow">
-        {{{clicker-stat-card "hull" "" "system.hull" true}}}
-        {{{clicker-stat-card "agi" "" "system.agi" true}}}
-        {{{clicker-stat-card "sys" "" "system.sys" true}}}
-        {{{clicker-stat-card "eng" "" "system.eng" true}}}
+        {{{clicker-stat-card "hull" "" "system.hull" true full=true}}}
+        {{{clicker-stat-card "agi" "" "system.agi" true full=true}}}
+        {{{clicker-stat-card "sys" "" "system.sys" true full=true}}}
+        {{{clicker-stat-card "eng" "" "system.eng" true full=true}}}
       </div>
 
       {{!-- Talents --}}

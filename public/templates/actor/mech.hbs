@@ -36,20 +36,22 @@
     <div class="tab stats" data-group="primary" data-tab="stats">
       <div class="stat-grid">
         {{{stat-edit-max-card
-          "hp" "mdi mdi-heart-outline" "system.hp.value" "system.hp.max"}}}
-        {{{stat-edit-max-card "heat" "cci cci-heat" "system.heat.value" "system.heat.max"}}}
-        {{{stat-view-card "evasion" "cci cci-evasion" "system.evasion"}}}
-        {{{stat-view-card "armor" "mdi mdi-shield-outline" "system.armor"}}}
-        {{{stat-edit-max-card "structure" "cci cci-structure" "system.structure.value" "system.structure.max"}}}
-        {{{stat-edit-max-card "stress" "cci cci-reactor" "system.stress.value" "system.stress.max"}}}
-        {{{stat-view-card "edef" "cci cci-edef" "system.edef"}}}
-        {{{stat-view-card "speed" "mdi mdi-arrow-right-bold-hexagon-outline" "system.speed"}}}
-        {{{stat-view-card "save" "cci cci-save" "system.save"}}}
-        {{{stat-view-card "sensor_range" "cci cci-sensor" "system.sensor_range"}}}
-        {{{tech-flow-card "tech_attack" "cci cci-tech-full" "system.tech_attack"}}}
-        {{{stat-edit-rollable-card "burn" "cci cci-burn" "system.burn"}}}
-        {{{stat-edit-card "overshield" "mdi mdi-shield-star-outline" "system.overshield.value"}}}
-        {{{stat-edit-max-card "repairs" "cci cci-repair" "system.repairs.value" "system.repairs.max"}}}
+          "hp" "mdi mdi-heart-outline" "system.hp.value" "system.hp.max" full=true}}}
+        {{{stat-edit-max-card "heat" "cci cci-heat" "system.heat.value" "system.heat.max" full=true}}}
+        {{{stat-view-card "evasion" "cci cci-evasion" "system.evasion" full=true}}}
+        {{{stat-view-card "armor" "mdi mdi-shield-outline" "system.armor" full=true}}}
+        {{
+          {stat-edit-max-card "structure" "cci cci-structure" "system.structure.value" "system.structure.max" full=true}
+        }}
+        {{{stat-edit-max-card "stress" "cci cci-reactor" "system.stress.value" "system.stress.max" full=true}}}
+        {{{stat-view-card "edef" "cci cci-edef" "system.edef" full=true}}}
+        {{{stat-view-card "speed" "mdi mdi-arrow-right-bold-hexagon-outline" "system.speed" full=true}}}
+        {{{stat-view-card "save" "cci cci-save" "system.save" full=true}}}
+        {{{stat-view-card "sensor_range" "cci cci-sensor" "system.sensor_range" full=true}}}
+        {{{tech-flow-card "tech_attack" "cci cci-tech-full" "system.tech_attack" full=true}}}
+        {{{stat-edit-rollable-card "burn" "cci cci-burn" "system.burn" full=true}}}
+        {{{stat-edit-card "overshield" "mdi mdi-shield-star-outline" "system.overshield.value" full=true}}}
+        {{{stat-edit-max-card "repairs" "cci cci-repair" "system.repairs.value" "system.repairs.max" full=true}}}
         <div class="size-card">
           {{#if (eq system.size 0.5)}}
             <i class="cci cci-size-half size-icon theme--main"></i>
@@ -59,8 +61,8 @@
         </div>
         {{{overcharge-button actor "system.overcharge"}}}
         <div class="flexcol card clipped">
-          <div class="lancer-header lancer-primary">
-            <span class="major">
+          <div class="lancer-header lancer-primary centered-header">
+            <span class="major stat-label">
               {{localize "lancer.mech-sheet.core.label"}}
             </span>
           </div>
@@ -75,14 +77,14 @@
             >
           </div>
         </div>
-        {{{stat-rollable-card "grit" "cci cci-armor" "system.grit"}}}
+        {{{stat-rollable-card "grit" "cci cci-armor" "system.grit" full=true}}}
         {{{pilot-slot "system.pilot" value=pilot}}}
 
         <div class="wraprow double hase">
-          {{{stat-rollable-card "hull" "" "system.hull"}}}
-          {{{stat-rollable-card "agi" "" "system.agi"}}}
-          {{{stat-rollable-card "sys" "" "system.sys"}}}
-          {{{stat-rollable-card "eng" "" "system.eng"}}}
+          {{{stat-rollable-card "hull" "" "system.hull" full=true}}}
+          {{{stat-rollable-card "agi" "" "system.agi" full=true}}}
+          {{{stat-rollable-card "sys" "" "system.sys" full=true}}}
+          {{{stat-rollable-card "eng" "" "system.eng" full=true}}}
         </div>
         <div class="inventory" style="flex: inherit; margin: 3px 10px">
           <button class="lancer-button" type="button" style="padding: 8px 16px">View Inventory</button>
@@ -90,7 +92,7 @@
       </div>
       <div class="pilot-frame-wrapper flexrow">
         <div class="card">
-          <span class="lancer-header lancer-primary submajor clipped-top">
+          <span class="lancer-header lancer-primary major clipped-top">
             {{localize "lancer.mech-sheet.macros.label"}}
           </span>
           <div class="lancer-flow-button-grid">
@@ -103,7 +105,7 @@
         </div>
         {{#if (is-combatant actor)}}
           <div style="min-width: 560px" class="card">
-            <span class="lancer-header lancer-primary submajor clipped-top">
+            <span class="lancer-header lancer-primary major clipped-top">
               {{localize "lancer.mech-sheet.actions.label"}}
             </span>
             <div class="lancer-flow-button-grid">
@@ -121,7 +123,7 @@
     <div class="tab loadout" data-group="primary" data-tab="loadout">
       {{{mech-frame "system.loadout.frame.value" system.core_energy}}}
       <div class="card clipped">
-        <span class="lancer-header lancer-primary submajor">{{
+        <span class="lancer-header lancer-primary major">{{
             localize "lancer.common-sheet.headers.combatUtilities"
           }}</span>
         <div class="lancer-flow-button-grid">

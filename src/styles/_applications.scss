@@ -166,10 +166,10 @@
     }
   }
 
+  // The window content already scrolls under the sticky sheet header. Letting
+  // this body scroll too produced a second, nested scrollbar on the pilot sheet.
   .scroll-body {
-    overflow-y: auto;
     margin-top: 8px;
-    height: calc(100% - 168px);
   }
 
   .monospace {

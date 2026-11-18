@@ -178,16 +178,21 @@
         font-family: var(--monospace-font-family);
       }
 
+      // Input and button share a grid row; give them the same height so they line up
+      input,
+      button {
+        align-self: center;
+        height: 44px;
+        box-sizing: border-box;
+      }
+
       input {
-        height: 2.5em;
-        margin-left: 2em;
-        margin-right: 1em;
+        margin: 0 1em 0 2em;
         width: auto;
       }
 
       button {
-        margin-left: 1em;
-        margin-right: 2em;
+        margin: 0 2em 0 1em;
         width: auto;
       }
 

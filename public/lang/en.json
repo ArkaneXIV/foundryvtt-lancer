@@ -91,6 +91,29 @@
         "repairs": "REP",
         "size": "SZ",
         "cost": "COST"
+      },
+      "fullStats": {
+        "hull": "HULL",
+        "agi": "AGILITY",
+        "sys": "SYSTEMS",
+        "eng": "ENGINEERING",
+        "level": "LICENSE LEVEL",
+        "grit": "GRIT",
+        "hp": "HP",
+        "evasion": "EVASION",
+        "armor": "ARMOR",
+        "structure": "STRUCTURE",
+        "heat": "HEAT",
+        "edef": "E-DEFENSE",
+        "stress": "STRESS",
+        "speed": "SPEED",
+        "save": "SAVE",
+        "sensor_range": "SENSORS",
+        "tech_attack": "TECH ATTACK",
+        "overcharge": "OVERCHARGE",
+        "burn": "BURN",
+        "overshield": "OVERSHIELD",
+        "repairs": "REPAIRS"
       }
     },
     "deployable-sheet": {

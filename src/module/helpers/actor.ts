@@ -40,6 +40,25 @@ export function getActorUUID(options: HelperOptions): string | null {
   return rActor?.uuid ?? null;
 }
 
+/**
+ * Resolve the title of a stat card. Templates can pass `full=true` to use the
+ * full stat name (e.g. "STRUCTURE" instead of "STRUCT") with a centered,
+ * size-fitted header label.
+ */
+function statCardLabel(title: string, options: HelperOptions) {
+  const full = !!options?.hash?.full;
+  const fullKey = `lancer.common-sheet.fullStats.${title}`;
+  const localizedTitle =
+    full && game.i18n.has(fullKey)
+      ? game.i18n.localize(fullKey)
+      : game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  return {
+    localizedTitle,
+    headerClass: full ? "centered-header" : "",
+    labelClass: full ? "stat-label" : "",
+  };
+}
+
 // Shows an X / MAX clipped card
 export function stat_edit_card_max(
   title: string,
@@ -50,12 +69,12 @@ export function stat_edit_card_max(
 ): string {
   let data_val = resolveHelperDotpath(options, data_path, 0);
   let max_val = resolveHelperDotpath(options, max_path, 0);
-  const localizedTitle = game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  const { localizedTitle, headerClass, labelClass } = statCardLabel(title, options);
   return `
     <div class="stat-card card clipped">
-      <div class="lancer-header lancer-primary ">
+      <div class="lancer-header lancer-primary ${headerClass}">
         <i class="${icon} i--4 i--light header-icon"> </i>
-        <span class="major">${localizedTitle}</span>
+        <span class="major ${labelClass}">${localizedTitle}</span>
       </div>
       ${std_x_of_y(data_path, data_val, max_val, "lancer-stat")}
     </div>
@@ -78,12 +97,12 @@ export function stat_edit_card(
       });
     }
   }
-  const localizedTitle = game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  const { localizedTitle, headerClass, labelClass } = statCardLabel(title, options);
   return `
     <div class="card clipped">
-      <div class="lancer-header lancer-primary ">
+      <div class="lancer-header lancer-primary ${headerClass}">
         <i class="${icon} i--4 i--light header-icon"> </i>
-        <span class="major">${localizedTitle}</span>
+        <span class="major ${labelClass}">${localizedTitle}</span>
       </div>
       <div class="${flowButton ? "stat-flow-container" : "flexrow flex-center"}">
         ${flowButton}
@@ -121,12 +140,12 @@ export function stat_view_card(
       });
     }
   }
-  const localizedTitle = game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  const { localizedTitle, headerClass, labelClass } = statCardLabel(title, options);
   return `
     <div class="stat-card card clipped">
-      <div class="lancer-header lancer-primary ">
+      <div class="lancer-header lancer-primary ${headerClass}">
         ${inc_if(`<i class="${icon} i--4 i--light header-icon"> </i>`, icon)}
-        <span class="major">${localizedTitle}</span>
+        <span class="major ${labelClass}">${localizedTitle}</span>
       </div>
       <div class="${leftFlowButton || rightFlowButton ? "stat-flow-container" : "flexrow flex-center"}">
         ${leftFlowButton}
@@ -197,11 +216,11 @@ export function clicker_stat_card(
       attackButton = _basicFlowButton(uuid, "BasicAttack", { icon: "cci cci-weapon" });
     }
   }
-  const localizedTitle = game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  const { localizedTitle, headerClass, labelClass } = statCardLabel(title, options);
   return `<div class="card clipped stat-container">
-      <div class="lancer-header lancer-primary ">
+      <div class="lancer-header lancer-primary ${headerClass}">
         <i class="${icon} i--4 i--light header-icon"> </i>
-        <span class="major">${localizedTitle}</span>
+        <span class="major ${labelClass}">${localizedTitle}</span>
       </div>
       <div class="flexrow">
         ${statButton}
@@ -317,12 +336,12 @@ export function tech_flow_card(title: string, icon: string, data_path: string, o
   let uuid = getActorUUID(options) ?? "unknown";
   let data_val = resolveHelperDotpath(options, data_path);
 
-  const localizedTitle = game.i18n.localize(`lancer.common-sheet.shortStats.${title}`);
+  const { localizedTitle, headerClass, labelClass } = statCardLabel(title, options);
   return `
     <div class="stat-card card clipped">
-      <div class="lancer-header lancer-primary">
+      <div class="lancer-header lancer-primary ${headerClass}">
         ${inc_if(`<i class="${icon} i--4 i--light header-icon"> </i>`, icon)}
-        <span class="major">${localizedTitle}</span>
+        <span class="major ${labelClass}">${localizedTitle}</span>
       </div>
       <div class="stat-flow-container">
         ${_basicFlowButton(uuid, "TechAttack", { icon: "cci cci-tech-quick" })}
@@ -396,8 +415,8 @@ export function overchargeButton(actor: LancerMECH, overcharge_path: string, opt
   let flowButton = _basicFlowButton(actor.uuid, "Overcharge");
   return `
     <div class="flexcol card clipped">
-      <div class="lancer-header lancer-primary clipped-top flexrow">
-        <span class="major">${game.i18n.localize("lancer.common-sheet.shortStats.overcharge")}</span>
+      <div class="lancer-header lancer-primary clipped-top flexrow centered-header">
+        <span class="major stat-label">${game.i18n.localize("lancer.common-sheet.shortStats.overcharge")}</span>
       </div>
       <div class="overcharge-container">
         ${flowButton}

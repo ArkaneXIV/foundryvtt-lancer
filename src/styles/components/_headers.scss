@@ -148,6 +148,59 @@
     float: left;
   }
 
+  // Stat card headers using full stat names (`full=true`, see statCardLabel in
+  // helpers/actor.ts): the label is centered over the card, the icon is pinned
+  // to the left, and the text is sized so the full word fits.
+  .lancer-header.centered-header {
+    position: relative;
+    justify-content: center;
+
+    .header-icon {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      white-space: nowrap;
+      text-align: center;
+      // Reserve the icon's width on both sides so the label stays centered
+      padding: 0 28px;
+    }
+  }
+
+  // Pilot sheet: give each tab's top-level section headers the same size as the
+  // rest ("major"). The dossier's BACKGROUND/HISTORY/NOTES and the tactical
+  // COUNTERS header come from shared helpers that use smaller header styles.
+  .lancer.sheet.pilot {
+    .tab.dossier > .wraprow > .card > .lancer-header,
+    .tab.tactical .card.double > .lancer-header.submajor {
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+
+  // Mount and loadout category headers end with control icons; keep the last
+  // one clear of the card's clipped corner
+  .lancer-header.mount-type-ctx-root,
+  .lancer-header.loadout-category {
+    padding-right: 8px;
+  }
+
+  // The mech sheet's 2x2 HASE cards are narrow (~67px) and have no icon. Let
+  // the cards shrink to half the column instead of growing to fit the label,
+  // and size the label so "ENGINEERING" fits.
+  .lancer.sheet.mech .hase > .card,
+  .lancer.sheet.mech .hase .lancer-header.centered-header {
+    min-width: 0;
+  }
+  .lancer.sheet.mech .hase .lancer-header.centered-header .stat-label {
+    font-size: 8px;
+    padding: 0 1px;
+  }
+
   .pilot-stats {
     clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
     -webkit-clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);

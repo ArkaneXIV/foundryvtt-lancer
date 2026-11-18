@@ -290,8 +290,9 @@
     display: grid;
     grid-template-columns: 1fr 30px;
     justify-items: start;
+    align-items: center;
     margin: 3px;
-    padding: 3px;
+    padding: 3px 3px 3px 8px;
   }
 
   /*=====================*/
@@ -700,6 +701,12 @@
 
   .stat-flow-container > a {
     margin: auto;
+  }
+
+  // Keep the value centered in the middle column, even when it's an input
+  // (e.g. BURN) rather than a text span
+  .stat-flow-container > :nth-child(2) {
+    justify-self: center;
   }
 
   .loading-wrapper {
