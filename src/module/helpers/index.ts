@@ -55,6 +55,7 @@ import {
   overchargeButton,
   stat_edit_card,
   stat_edit_card_max,
+  full_stat_labels,
   stat_rollable_card,
   stat_view_card,
   tech_flow_card,
@@ -239,6 +240,7 @@ export function registerHandlebarsHelpers() {
   Handlebars.registerHelper("stat-edit-rollable-card", stat_edit_rollable_card);
   Handlebars.registerHelper("stat-edit-card", stat_edit_card);
   Handlebars.registerHelper("stat-edit-max-card", stat_edit_card_max);
+  Handlebars.registerHelper("full-stat-labels", full_stat_labels);
   Handlebars.registerHelper("clicker-stat-card", clicker_stat_card);
   Handlebars.registerHelper("npc-clicker-statblock-card", npc_stat_block_clicker_card);
   Handlebars.registerHelper("npc-clicker-statarr-card", npc_stat_array_clicker_card);

@@ -41,12 +41,12 @@ export function getActorUUID(options: HelperOptions): string | null {
 }
 
 /**
- * Resolve the title of a stat card. Templates can pass `full=true` to use the
- * full stat name (e.g. "STRUCTURE" instead of "STRUCT") with a centered,
- * size-fitted header label.
+ * Resolve the title of a stat card. Templates can pass `full=true`, or wrap
+ * cards in a `{{#full-stat-labels}}` block, to use the full stat name (e.g.
+ * "STRUCTURE" instead of "STRUCT") with a centered, size-fitted header label.
  */
 function statCardLabel(title: string, options: HelperOptions) {
-  const full = !!options?.hash?.full;
+  const full = !!(options?.hash?.full || options?.data?.fullStatLabels);
   const fullKey = `lancer.common-sheet.fullStats.${title}`;
   const localizedTitle =
     full && game.i18n.has(fullKey)
@@ -466,4 +466,15 @@ export function deployer_slot(data_path: string, options: HelperOptions): string
         <div class="major modifier-name i--light">${existing.type.toUpperCase()} ${existing.name}</div>
       </div>
     </div>`;
+}
+
+/**
+ * Block helper: stat cards rendered inside it use full stat names.
+ * Used instead of a `full=true` argument on every card, which made some helper
+ * calls long enough for the template formatter to break them.
+ */
+export function full_stat_labels(this: unknown, options: HelperOptions): string {
+  const data = Handlebars.createFrame(options.data ?? {});
+  data.fullStatLabels = true;
+  return options.fn(this, { data });
 }
